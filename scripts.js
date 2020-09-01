@@ -1,61 +1,40 @@
-// https://www.html5rocks.com/en/tutorials/canvas/imagefilters/
+
+const canvas = document.getElementById('paper');
+const ctx = canvas.getContext('2d');
 
 
-Filters = {};
-Filters.getPixels = function(img) {
-  var c = this.getCanvas(img.width, img.height);
-  var ctx = c.getContext('2d');
-  ctx.drawImage(img);
-  return ctx.getImageData(0,0,c.width,c.height);
-};
+const img = new Image();
+img.src = 'order5s.png';
 
-Filters.getCanvas = function(w,h) {
-  var c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  return c;
-};
+img.addEventListener('load', () => {
 
-Filters.filterImage = function(filter, image, var_args) {
-  var args = [this.getPixels(image)];
-  for (var i=2; i<arguments.length; i++) {
-    args.push(arguments[i]);
+  // original image
+  ctx.drawImage(img, 0, 0, 1000, 800);
+
+  // get image data
+  const imageData = ctx.getImageData(0, 0, 1000, 800);
+  console.log(imageData);
+
+  for (let i = 0; i < imageData.data.length; i += 4) {
+
+
+    // Modify pixel data
+    imageData.data[i + 0] = invert(imageData.data[i + 0]); // R
+    imageData.data[i + 1] = invert(imageData.data[i + 1]); // G
+    imageData.data[i + 2] = invert(imageData.data[i + 2]); // B
+    // imageData.data[i + 3] = invert(imageData.data[i + 3]); // A
   }
-  return filter.apply(null, args);
+
+  ctx.putImageData(imageData, 0, 0);
+
+});
+
+
+function invert(pxl) {
+  return 255 - pxl;
 };
 
-Filters.grayscale = function(pixels, args) {
-  var d = pixels.data;
-  for (var i=0; i<d.length; i+=4) {
-    var r = d[i];
-    var g = d[i+1];
-    var b = d[i+2];
-    // CIE luminance for the RGB
-    // The human eye is bad at seeing red and blue, so we de-emphasize them.
-    var v = 0.2126*r + 0.7152*g + 0.0722*b;
-    d[i] = d[i+1] = d[i+2] = v
-  }
-  return pixels;
-};
 
-Filters.brightness = function(pixels, adjustment) {
-  var d = pixels.data;
-  for (var i=0; i<d.length; i+=4) {
-    d[i] += adjustment;
-    d[i+1] += adjustment;
-    d[i+2] += adjustment;
-  }
-  return pixels;
-};
-
-Filters.threshold = function(pixels, threshold) {
-  var d = pixels.data;
-  for (var i=0; i<d.length; i+=4) {
-    var r = d[i];
-    var g = d[i+1];
-    var b = d[i+2];
-    var v = (0.2126*r + 0.7152*g + 0.0722*b >= threshold) ? 255 : 0;
-    d[i] = d[i+1] = d[i+2] = v
-  }
-  return pixels;
+function rand() {
+  return Math.floor(Math.random() * Math.floor(255));
 };
